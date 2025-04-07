@@ -78,7 +78,8 @@
         <div class="container-xxl py-5">
             <div class="container">
                 <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Upload Your Resume</h1>
-                <form id="uploadForm" class="mb-5">
+                    <form id="uploadForm" class="mb-5" enctype="multipart/form-data">
+
                     <div class="mb-3">
                         <label for="file" class="form-label">Resume (PDF or DOCX):</label>
                         <input type="file" class="form-control" id="file" name="file" accept=".pdf,.doc,.docx" required>

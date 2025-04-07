@@ -1,3 +1,4 @@
+require('dotenv').config(); // should be first or near the top
 const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
@@ -6,25 +7,35 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
 
+
 const app = express();
 const upload = multer();  // resume upload
 const PORT = process.env.PORT || 3000;  // port 3000
-
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
+//postgresql://postgres:[Darshan@0904.]@db.ttiycujbhughvzyqfrxf.supabase.co:5432/postgres
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // PostgreSQL connection
-const pool = new Pool({
-    user: 'postgres',          // Replace with your PostgreSQL user
-    host: 'localhost',
-    database: 'postgres',      // Replace with your database name
-    password: 'admin',         // Replace with your password
-    port: 5432,
-});
+//const pool = new Pool({
+ ///   user: 'postgres',          // Replace with your PostgreSQL user
+    //host: 'localhost',
+    //database: 'postgres',      // Replace with your database name
+   // password: 'admin',         // Replace with your password
+    //port: 5432,
+//});
 
 app.use(cors());
 app.use(bodyParser.json());
+
+
+
 
 // Serve static files from the root, lib, and images directories
 app.use(express.static(path.join(__dirname))); // This serves files from the root
@@ -90,10 +101,13 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
     const { password } = req.body;
     const { originalname, buffer } = req.file;
+
+    if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded.' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -195,15 +209,18 @@ app.post('/submit', async (req, res) => {
     }
 });
 
+
 app.get('/api/employees', async (req, res) => {
+    console.log("🔍 API hit: /api/employees");
     try {
         const result = await pool.query('SELECT * FROM employees');
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('❌ Error fetching data:', err.message);
         res.status(500).send('Error fetching data');
     }
 });
+
 
 // Start the server
 app.listen(PORT, () => {
